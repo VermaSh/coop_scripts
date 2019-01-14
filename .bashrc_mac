@@ -1,0 +1,64 @@
+localMachineUsername="shubhamverma"
+w3Username="shubhamv"
+
+sourceDirectory="sources/404098"
+
+if [ $(whoami) = $localMachineUsername ]; then
+	echo "****Setting up environtment variables****"
+	export DEV_DIR=$HOME/dev
+	echo "DEV_DIR            : $DEV_DIR"
+	
+	export GC_WORKSPACE="$DEV_DIR/gc-workspace"
+	echo "GC_WORKSPACE       : $GC_WORKSPACE"
+	
+	export OMR_WORKSPACE="$GC_WORKSPACE/omr"
+	echo "OMR_WORKSPACE      : $OMR_WORKSPACE"
+	
+	export OPENJ9_WORKSPACE="$GC_WORKSPACE/openj9"
+	echo "OPENJ9_WORKSPACE   : $OPENJ9_WORKSPACE"
+	
+	export OPENJ9_WORKING_DIR="$OPENJ9_WORKSPACE/runtime/"  
+	echo "OPENJ9_WORKING_DIR : $OPENJ9_WORKING_DIR"
+	
+	printf "\n\n****Setting up environtment variables (maping for remote drive)****\n"
+	export REMOTE_ACTIVE_SOURCE=/team/$w3Username/$sourceDirectory/jre
+	echo "REMOTE_ACTIVE_SOURCE :$REMOTE_ACTIVE_SOURCE"
+	#Maybe have a condition to attach jre only if the java version major is above 8
+
+	export REMOTE_COMPILE_DIR=$REMOTE_ACTIVE_SOURCE/lib/amd64/default
+	# export REMOTE_COMPILE_DIR=$REMOTE_ACTIVE_SOURCE/lib/amd64/compressedrefs
+	echo "REMOTE_COMPILE_DIR   :$REMOTE_COMPILE_DIR"
+
+	export REMOTE_RUN_DIR=$REMOTE_ACTIVE_SOURCE/bin/
+	echo "REMOTE_RUN_DIR       :$REMOTE_RUN_DIR"
+	
+	source ~/.bash_aliases
+	
+elif [ $(whoami) = $w3Username ]; then
+	echo "****Setting up environtment variables****"
+	export OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=8.0.0.0
+	export VERSION_MAJOR=8
+	echo "VERSION_MAJOR     : $VERSION_MAJOR"
+	
+	export CURRENT_SOURCE=/team/$w3Username/$sourceDirectory/jre
+	echo "CURRENT_SOURCE    : $CURRENT_SOURCE"   
+	#Maybe have a condition to attach jre only if the java version major is above 8
+
+	export CURRENT_JAVA_HOME=/team/$w3Username/$sourceDirectory
+	echo "CURRENT_JAVA_HOME : $CURRENT_JAVA_HOME"
+
+	export COMPILE_DIR=$CURRENT_SOURCE/lib/amd64/default
+	# export COMPILE_DIR=$CURRENT_SOURCE/lib/amd64/compressedrefs
+	echo "COMPILE_DIR       : $COMPILE_DIR"
+
+	export RUN_DIR=$CURRENT_SOURCE/bin/
+	echo "RUN_DIR           : $RUN_DIR"
+
+	alias make_gc_vm="rm -f libj9gc* && rm -f libj9vrb29.so && rm -f libj9vm29.so && make -j phase_omr j9gc j9vrb phase_core"
+	alias make_gc="rm -f libj9gc* && rm -f libj9vrb29.so && make -j phase_omr j9gc j9vrb"
+	alias run_gc="./java -verbose:gc -Xgcpolicy:optthruput -Xint -cp /team/amicic/vich.jar vich.runner.Menu 0"
+	alias run_gc_simplified="./java -Xnocompressedrefs -verbose:gc -Xint -cp /team/amicic/vich.jar vich.runner.Menu 0"
+	alias add_date="date +%Y_%m_%d__%H%M%S"
+	alias fetch_source_code="~/scripts/get_new_source.sh"
+	alias list_libs='ls -lt | grep -E ".so$"'
+fi

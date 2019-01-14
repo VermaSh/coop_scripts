@@ -1,0 +1,42 @@
+alias teamdrive="ssh some_machine.ibm.com"
+alias aix="ssh some_machine.ibm.com"
+alias linux="ssh some_machine.ibm.com"
+alias compile_machine="ssh some_machine.ibm.com"
+
+# Rsync uses last modified date to figure which file needs to be synced
+# ===========================================================================
+# OLD Sync commands
+filters="--include='*/' --include='*.cpp' --include='*.hpp' --include='*.c' --include='*.h' --exclude='*' --exclude='.*'"
+options="-ravzu --recursive --progress --prune-empty-dirs"
+machine_login="$w3Username@rhel6x64vm5.ottawa.ibm.com"
+rsync_message='Will only udpdate .c, .h, .cpp and .hpp. \nAny new files will have to be pushed manually to '$REMOTE_COMPILE_DIR
+
+alias sync_omr_old="printf '$rsync_message\n'; \
+rsync $options $filters \
+$OMR_WORKSPACE $machine_login:$REMOTE_COMPILE_DIR"
+
+alias sync_openj9_old="printf '$rsync_message\n'; \
+rsync $options $filters --exclude='omr/' \
+$OPENJ9_WORKING_DIR $machine_login:$REMOTE_COMPILE_DIR"
+
+alias sync_gc_workspace_old="sync_omr_old; sync_openj9_old;"
+# ===========================================================================
+
+
+alias sync_gc_logs="rsync $options --include='*/' --include='*.txt' --exclude='*' --exclude='.*' \
+rhel6x64vm5.ottawa.ibm.com:/team/$w3Username/logs/ ~/dev/logs/"
+
+# ===========================================================================
+# New Sync commands (Logic has been moved to syncFiles.sh)
+scripts_source_dir="~/Documents/mine/Scripts"
+alias sync_omr="$scripts_source_dir/syncFiles.sh '' 'u' '' $OMR_WORKSPACE $REMOTE_COMPILE_DIR"
+# alias sync_omr="$scripts_source_dir/sync_stuff.sh '' 'u' '' $OMR_WORKSPACE $REMOTE_COMPILE_DIR/omr"
+alias sync_openj9="$scripts_source_dir/syncFiles.sh '' 'u' '' $OPENJ9_WORKING_DIR $REMOTE_COMPILE_DIR 'omr/'"
+alias sync_gc_workspace="sync_omr; sync_openj9;"
+# ===========================================================================
+
+# This is to address cases in which the user has gotten files from the server. But they don't
+# have the new changes (because the changes weren't propagated). In order to get rsync to push those
+# changes to remote we need to update the last modified date of the local files.
+alias touch_omr_files="$scripts_source_dir/touch_files.sh 0 $OMR_WORKSPACE"
+alias touch_openj9_files="$scripts_source_dir/touch_files.sh 0 $OPENJ9_WORKSPACE"
